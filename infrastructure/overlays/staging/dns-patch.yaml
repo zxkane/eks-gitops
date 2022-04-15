@@ -1,0 +1,9 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: external-dns
+spec:
+  values:
+    txtOwnerId: gitops-cluster-staging
+    domainFilters[0]: test.kane.mx
+    policy: sync
