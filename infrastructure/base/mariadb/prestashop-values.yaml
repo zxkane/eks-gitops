@@ -1,0 +1,6 @@
+auth:
+  existingSecret: prestashop-mariadb
+primary:
+  persistence:
+    enabled: false
+    storageClass: standard

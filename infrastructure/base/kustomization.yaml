@@ -5,3 +5,4 @@ resources:
   - aws-load-balancer-controller
   - dns
   - sealed-secrets
+  - mariadb
