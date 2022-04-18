@@ -6,3 +6,4 @@ resources:
   - dns
   - sealed-secrets
   - mariadb
+  - slack

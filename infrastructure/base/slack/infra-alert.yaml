@@ -1,0 +1,33 @@
+apiVersion: notification.toolkit.fluxcd.io/v1beta1
+kind: Alert
+metadata:
+  name: kube-system-alert
+  namespace: flux-system
+spec:
+  providerRef:
+    name: slack
+  eventSeverity: info
+  eventSources:
+    - kind: Kustomization
+      name: '*'
+      namespace: 'kube-system'
+    - kind: HelmRelease
+      name: '*'
+      namespace: 'kube-system'
+---
+apiVersion: notification.toolkit.fluxcd.io/v1beta1
+kind: Alert
+metadata:
+  name: mariadb-alert
+  namespace: flux-system
+spec:
+  providerRef:
+    name: slack
+  eventSeverity: info
+  eventSources:
+    - kind: Kustomization
+      name: '*'
+      namespace: 'mariadb'
+    - kind: HelmRelease
+      name: '*'
+      namespace: 'mariadb'
