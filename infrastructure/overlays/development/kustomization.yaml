@@ -2,8 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../base
-  - ./prestashop-mariadb-secrets.yaml
-  - ./slack-sealed-secrets.yaml
+  - ./secrets.yaml
 patches:
   - path: ./aws-load-balancer-controller-patch.yaml
   - path: ./aws-load-balancer-serviceaccount-patch.yaml

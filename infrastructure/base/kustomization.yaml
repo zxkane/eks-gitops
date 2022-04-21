@@ -4,6 +4,6 @@ resources:
   - sources
   - aws-load-balancer-controller
   - dns
-  - sealed-secrets
   - mariadb
   - slack
+  - ./secrets.yaml
