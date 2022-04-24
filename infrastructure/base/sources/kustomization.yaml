@@ -4,3 +4,4 @@ namespace: flux-system
 resources:
   - eks-charts.yaml
   - bitnami.yaml
+  - kyverno.yaml

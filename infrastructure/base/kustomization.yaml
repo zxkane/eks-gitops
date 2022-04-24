@@ -7,3 +7,4 @@ resources:
   - mariadb
   - slack
   - ./secrets.yaml
+  - policy
