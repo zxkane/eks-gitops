@@ -24,4 +24,11 @@ patches:
         value: kustomize-controller
     target:
       kind: Kustomization
-      name: "flux-system"  
+      name: "flux-system"
+  - patch: |
+      - op: add
+        path: /spec/serviceAccountName
+        value: helm-controller
+    target:
+      kind: HelmRelease
+      name: "flux-system"        
