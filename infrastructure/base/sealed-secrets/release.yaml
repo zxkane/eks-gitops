@@ -12,6 +12,7 @@ spec:
         name: sealed-secrets
       version: ">=1.15.0-0"
   interval: 1h0m0s
+  serviceAccountName: helm-controller
   releaseName: sealed-secrets-controller
   targetNamespace: flux-system
   install:
