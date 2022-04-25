@@ -5,6 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m0s
+  serviceAccountName: kustomize-controller
   path: ./infrastructure/overlays/product
   prune: true
   sourceRef:
