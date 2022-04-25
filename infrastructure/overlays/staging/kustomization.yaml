@@ -9,7 +9,6 @@ patches:
   - path: ./dns-patch.yaml
   - path: ./dns-sa-patch.yaml
   - path: ./slack-patch.yaml
-patches:
   - patch: |
       - op: add
         path: /spec/serviceAccountName
