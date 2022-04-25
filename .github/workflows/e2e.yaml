@@ -25,10 +25,25 @@ jobs:
           flux install --export > gotk-components.yaml
           sed '/gotk-sync\.yaml/d' ./clusters/cluster-dev/flux-system/kustomization.yaml > kustomization.yaml
           kubectl apply -k ./
-          kubectl -n flux-system wait deployment/helm-controller --for=condition=Available=True --timeout=3m
-          kubectl -n flux-system wait deployment/kustomize-controller --for=condition=Available=True --timeout=3m
-          kubectl -n flux-system wait deployment/notification-controller --for=condition=Available=True --timeout=3m
-          kubectl -n flux-system wait deployment/source-controller --for=condition=Available=True --timeout=3m
+          
+          # check the availability of flux
+          kubectl -n flux-system wait deployment/helm-controller --for=condition=Available=True --timeout=6m
+          kubectl -n flux-system wait deployment/kustomize-controller --for=condition=Available=True --timeout=6m
+          kubectl -n flux-system wait deployment/notification-controller --for=condition=Available=True --timeout=6m
+          kubectl -n flux-system wait deployment/source-controller --for=condition=Available=True --timeout=6m
+          
+          # generate secret for mariadb
+          kubectl apply -f - <<EOF > cat
+          apiVersion: v1
+          data:
+            mariadb-password: YzNyRnFTNlhtOW5COUJmQmhSZjRjUHlaejR0SFdRS1pIRFZrVFhNY0hUN1Y2NjJaWUdMdUZaWTdDd3puWnlOQQ==
+            mariadb-replication-password: eldrak1iTThoS0xaUkNKdkJjV2pGNVdLZ0J1SlBhV3Azd2M1Qzd0WXNGN1BrdkJHdExWclpOVnp0Wk5DREd0Vw==
+            mariadb-root-password: cVlSdkZZeldLY2hhUWVmd0xxU2RyS2Y3R1dqaHlOdkVMS0tZckFId1VXOUhZczZkQ2h4bmgyY0J1NGNGejhWdg==
+          kind: Secret
+          metadata:
+            name: prestashop-mariadb
+            namespace: kube-system
+          EOF
       - name: Setup cluster reconciliation
         run: |
           kubectl apply -f - <<EOF > cat
@@ -55,14 +70,17 @@ jobs:
       - name: Verify cluster reconciliation
         run: >
           kubectl -n flux-system wait kustomization/infrastructure
-          --for=condition=ready --timeout=5m
+          --for=condition=ready --timeout=3m
       - name: Verify helm reconciliation
         run: >
           kubectl -n flux-system wait helmrelease/sealed-secrets
-          --for=condition=ready --timeout=5m
+          --for=condition=ready --timeout=3m
 
           kubectl -n flux-system wait helmrelease/external-dns
-          --for=condition=ready --timeout=5m
+          --for=condition=ready --timeout=3m
+          
+          kubectl -n kube-system wait helmrelease/prestashop-mariadb
+          --for=condition=ready --timeout=1m
       - name: Debug failure
         if: failure()
         run: |
@@ -71,3 +89,6 @@ jobs:
           kubectl -n flux-system logs deploy/kustomize-controller
           kubectl -n flux-system logs deploy/helm-controller
           flux get all --all-namespaces
+          
+          kubectl get networkpolicy -A 
+          kubectl -n kube-system describe helmrepositories.source.toolkit.fluxcd.io bitnami-charts 

@@ -9,8 +9,8 @@ spec:
       chart: mariadb
       sourceRef:
         kind: HelmRepository
-        name: bitnami
-        namespace: flux-system
+        name: bitnami-charts
+        namespace: kube-system
       version: 10.4.0
   interval: 1h0m0s
   install:
