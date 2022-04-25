@@ -49,6 +49,7 @@ jobs:
           EOF
           flux create kustomization flux-system \
           --source=flux-system \
+          --service-account=kustomize-controller \
           --path=./clusters/cluster-dev
           sleep 20
       - name: Verify cluster reconciliation
@@ -60,7 +61,7 @@ jobs:
           kubectl -n flux-system wait helmrelease/sealed-secrets
           --for=condition=ready --timeout=5m
 
-          kubectl -n kube-system wait helmrelease/external-dns
+          kubectl -n flux-system wait helmrelease/external-dns
           --for=condition=ready --timeout=5m
       - name: Debug failure
         if: failure()
