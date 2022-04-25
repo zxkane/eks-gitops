@@ -21,7 +21,14 @@ jobs:
         with:
           version: v0.11.1
       - name: Install Flux in Kubernetes Kind
-        run: flux install
+        run: |
+          flux install --export > gotk-components.yaml
+          sed '/gotk-sync\.yaml/d' ./clusters/cluster-dev/flux-system/kustomization.yaml > kustomization.yaml
+          kubectl apply -k ./
+          kubectl -n flux-system wait deployment/helm-controller --for=condition=Available=True --timeout=3m
+          kubectl -n flux-system wait deployment/kustomize-controller --for=condition=Available=True --timeout=3m
+          kubectl -n flux-system wait deployment/notification-controller --for=condition=Available=True --timeout=3m
+          kubectl -n flux-system wait deployment/source-controller --for=condition=Available=True --timeout=3m
       - name: Setup cluster reconciliation
         run: |
           kubectl apply -f - <<EOF > cat
@@ -42,6 +49,7 @@ jobs:
           EOF
           flux create kustomization flux-system \
           --source=flux-system \
+          --service-account=kustomize-controller \
           --path=./clusters/cluster-dev
           sleep 20
       - name: Verify cluster reconciliation
@@ -53,7 +61,7 @@ jobs:
           kubectl -n flux-system wait helmrelease/sealed-secrets
           --for=condition=ready --timeout=5m
 
-          kubectl -n kube-system wait helmrelease/external-dns
+          kubectl -n flux-system wait helmrelease/external-dns
           --for=condition=ready --timeout=5m
       - name: Debug failure
         if: failure()

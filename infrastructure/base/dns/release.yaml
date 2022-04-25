@@ -4,7 +4,7 @@ metadata:
   name: external-dns
 spec:
   releaseName: external-dns
-  targetNamespace: kube-system
+  targetNamespace: flux-system
   chart:
     spec:
       chart: external-dns
