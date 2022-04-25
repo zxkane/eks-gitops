@@ -9,3 +9,17 @@ patches:
   - path: ./dns-patch.yaml
   - path: ./dns-sa-patch.yaml
   - path: ./slack-patch.yaml
+  - patch: |
+      - op: add
+        path: /spec/serviceAccountName
+        value: kustomize-controller
+    target:
+      kind: Kustomization
+      namespace: (flux-system|kube-system|mariadb)
+  - patch: |
+      - op: add
+        path: /spec/serviceAccountName
+        value: helm-controller
+    target:
+      kind: HelmRelease
+      namespace: (flux-system|kube-system|mariadb)  
