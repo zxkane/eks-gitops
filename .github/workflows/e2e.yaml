@@ -89,6 +89,3 @@ jobs:
           kubectl -n flux-system logs deploy/kustomize-controller
           kubectl -n flux-system logs deploy/helm-controller
           flux get all --all-namespaces
-          
-          kubectl get networkpolicy -A 
-          kubectl -n kube-system describe helmrepositories.source.toolkit.fluxcd.io bitnami-charts 
