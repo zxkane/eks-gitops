@@ -21,7 +21,14 @@ jobs:
         with:
           version: v0.11.1
       - name: Install Flux in Kubernetes Kind
-        run: flux install
+        run: |
+          flux install --export > gotk-components.yaml
+          sed '/gotk-sync\.yaml/d' ./clusters/cluster-dev/flux-system/kustomization.yaml > kustomization.yaml
+          kubectl apply -k ./
+          kubectl -n flux-system wait deployment/helm-controller --for=condition=Available=True --timeout=3m
+          kubectl -n flux-system wait deployment/kustomize-controller --for=condition=Available=True --timeout=3m
+          kubectl -n flux-system wait deployment/notification-controller --for=condition=Available=True --timeout=3m
+          kubectl -n flux-system wait deployment/source-controller --for=condition=Available=True --timeout=3m
       - name: Setup cluster reconciliation
         run: |
           kubectl apply -f - <<EOF > cat
