@@ -1,0 +1,36 @@
+apiVersion: kyverno.io/v1
+kind: Policy
+metadata:
+  name: restrict-secrets-by-type
+  namespace: app-a
+  annotations:
+    policies.kyverno.io/title: Restrict Secrets by Name
+    policies.kyverno.io/category: security
+    policies.kyverno.io/subject: Secret
+    policies.kyverno.io/description: >-
+      Disallow creating/deleting secrets in namespace 'app-a' beside the helm
+      storage.
+spec:
+  background: false
+  validationFailureAction: enforce
+  rules:
+    - name: safe-secrets-for-helm-storage
+      match:
+        resources:
+          kinds:
+            - Secret
+      preconditions:
+        all:
+          - key: '{{request.operation}}'
+            operator: In
+            value:
+              - CREATE
+              - UPDATE
+              - DELETE
+          - key: '{{serviceAccountName}}'
+            operator: Equals
+            value: app-a-reconciler
+      validate:
+        message: Only Secrets are created by Helm v3+
+        pattern:
+          type: helm.sh/release.v1
