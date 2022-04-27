@@ -1,0 +1,117 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: app-a-reconciler
+  namespace: app-a
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: app-a
+  name: app-a-role
+rules:
+- apiGroups:
+  - ""
+  resources: 
+  - secrets
+  verbs:
+  - get
+  - list
+  - create
+  - delete
+  - update
+- apiGroups:
+  - ""
+  resources: 
+  - pods
+  - configmaps
+  - services
+  - endpoints
+  - persistentvolumeclaims
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - daemonsets
+  - statefulsets
+  - replicasets
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - "source.toolkit.fluxcd.io"
+  resources: 
+  - helmrepositories
+  resourceNames:
+  - bitnami
+  verbs:
+  - get
+- apiGroups:
+  - "helm.toolkit.fluxcd.io"
+  resources:
+  - helmreleases
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs:
+  - list
+  - watch
+  - get
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses/status
+  verbs:
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: app-a-role-binding
+  namespace: app-a
+subjects:
+- kind: ServiceAccount
+  name: app-a-reconciler
+  namespace: app-a
+roleRef:
+  kind: Role
+  name: app1-role
+  apiGroup: rbac.authorization.k8s.io
