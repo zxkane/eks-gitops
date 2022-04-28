@@ -4,3 +4,6 @@ primary:
   persistence:
     enabled: false
     storageClass: standard
+  auth:
+    database: prestashop
+    username: prestashop
