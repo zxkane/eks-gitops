@@ -88,6 +88,10 @@ jobs:
           
           kubectl -n app-a wait policies.kyverno.io/restrict-secrets-by-type
           --for=jsonpath='{.status.ready}'=true --timeout=1m
+      - name: Verify tenants reconciliation
+        run: >
+          kubectl -n app-a wait kustomization/app-a-tenant
+          --for=condition=ready --timeout=3m   
       - name: Debug failure
         if: failure()
         run: |
