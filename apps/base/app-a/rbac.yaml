@@ -67,8 +67,6 @@ rules:
   - "source.toolkit.fluxcd.io"
   resources: 
   - helmrepositories
-  resourceNames:
-  - bitnami
   verbs:
   - get
 - apiGroups:
@@ -113,5 +111,5 @@ subjects:
   namespace: app-a
 roleRef:
   kind: Role
-  name: app1-role
+  name: app-a-role
   apiGroup: rbac.authorization.k8s.io
