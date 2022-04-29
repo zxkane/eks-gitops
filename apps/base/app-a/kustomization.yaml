@@ -6,4 +6,5 @@ resources:
   - ./namespace.yaml
   - ./rbac.yaml
   - ./policies.yaml
-  - ./bitnami.yaml  
+  - ./bitnami.yaml
+  - ./tenant.yaml

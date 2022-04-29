@@ -1,0 +1,54 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta1
+kind: GitRepository
+metadata:
+  name: app-a-tenant
+spec:
+  interval: 1m
+  url: https://github.com/zxkane/eks-gitops-app-a.git
+  ref:
+    branch: main  
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: app-a-tenant
+spec:
+  serviceAccountName: app-a-reconciler
+  interval: 5m0s
+  retryInterval: 5m0s
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: app-a-tenant
+    namespace: app-a
+  patches:
+    - patch: |-
+        - op: replace
+          path: /spec/serviceAccountName
+          value: app-a-reconciler
+        - op: replace
+          path: /metadata/namespace
+          value: app-a
+      target:
+        group: helm.toolkit.fluxcd.io
+        version: v2beta1
+        kind: HelmRelease
+    - patch: |-
+        - op: replace
+          path: /spec/serviceAccountName
+          value: app-a-reconciler
+        - op: replace
+          path: /metadata/namespace
+          value: app-a
+      target:
+        group: kustomize.toolkit.fluxcd.io
+        version: v1beta2
+        kind: Kustomization
+    - patch: |-
+        - op: replace
+          path: /namespace
+          value: app-a
+      target:
+        group: kustomize.config.k8s.io
+        version: v1beta1
+        kind: Kustomization          
