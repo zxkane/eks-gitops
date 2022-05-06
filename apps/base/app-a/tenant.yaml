@@ -2,6 +2,7 @@ apiVersion: source.toolkit.fluxcd.io/v1beta1
 kind: GitRepository
 metadata:
   name: app-a-tenant
+  namespace: app-a
 spec:
   interval: 1m
   url: https://github.com/zxkane/eks-gitops-app-a.git
@@ -12,6 +13,7 @@ apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
 metadata:
   name: app-a-tenant
+  namespace: app-a
 spec:
   serviceAccountName: app-a-reconciler
   interval: 5m0s
