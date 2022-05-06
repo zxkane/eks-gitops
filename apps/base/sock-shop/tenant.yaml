@@ -1,0 +1,56 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta1
+kind: GitRepository
+metadata:
+  name: sock-shop-tenant
+  namespace: sock-shop
+spec:
+  interval: 1m
+  url: https://github.com/zxkane/microservices-demo.git
+  ref:
+    branch: gitops  
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: sock-shop-tenant
+  namespace: sock-shop
+spec:
+  serviceAccountName: sock-shop-reconciler
+  interval: 5m0s
+  retryInterval: 5m0s
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: sock-shop-tenant
+    namespace: sock-shop
+  patches:
+    - patch: |-
+        - op: replace
+          path: /spec/serviceAccountName
+          value: sock-shop-reconciler
+        - op: replace
+          path: /metadata/namespace
+          value: app-a
+      target:
+        group: helm.toolkit.fluxcd.io
+        version: v2beta1
+        kind: HelmRelease
+    - patch: |-
+        - op: replace
+          path: /spec/serviceAccountName
+          value: sock-shop-reconciler
+        - op: replace
+          path: /metadata/namespace
+          value: app-a
+      target:
+        group: kustomize.toolkit.fluxcd.io
+        version: v1beta2
+        kind: Kustomization
+    - patch: |-
+        - op: replace
+          path: /namespace
+          value: sock-shop-reconciler
+      target:
+        group: kustomize.config.k8s.io
+        version: v1beta1
+        kind: Kustomization          
