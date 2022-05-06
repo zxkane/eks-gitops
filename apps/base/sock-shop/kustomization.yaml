@@ -5,3 +5,4 @@ metadata:
 resources:
   - ./namespace.yaml
   - ./rbac.yaml
+  - ./tenant.yaml

@@ -80,7 +80,7 @@ jobs:
           --for=condition=ready --timeout=3m
           
           kubectl -n kube-system wait helmrelease/prestashop-mariadb
-          --for=condition=ready --timeout=1m
+          --for=condition=ready --timeout=3m
       - name: Verify apps reconciliation
         run: >
           kubectl -n flux-system wait kustomization/apps
@@ -94,7 +94,14 @@ jobs:
           --for=condition=ready --timeout=3m
       - name: Verify tenant 'sock-shop' reconciliation
         run: >
-          kubectl wait ns sock-shop --timeout=30s --for=jsonpath='{.status.phase}'=Active
+          kubectl -n sock-shop wait kustomization/sock-shop-tenant 
+          --for=condition=ready --timeout=1m
+          
+          kubectl wait ns sock-shop --for=jsonpath='{.status.phase}'=Active
+          --timeout=30s
+          
+          kubectl -n sock-shop wait deployments/carts 
+          --for=condition=Available=True --timeout=1m 
       - name: Debug failure
         if: failure()
         run: |
@@ -103,3 +110,4 @@ jobs:
           kubectl -n flux-system logs deploy/kustomize-controller
           kubectl -n flux-system logs deploy/helm-controller
           flux get all --all-namespaces
+          kubectl -n sock-shop get all
