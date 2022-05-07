@@ -106,11 +106,14 @@ jobs:
           --for=condition=ready --timeout=3m
       - name: Verify tenant 'sock-shop' reconciliation
         run: >
-          kubectl -n sock-shop wait kustomization/sock-shop-tenant 
-          --for=condition=ready --timeout=1m
-          
           kubectl wait ns sock-shop --for=jsonpath='{.status.phase}'=Active
           --timeout=30s
+
+          kubectl -n sock-shop create secret generic slack-url
+          --from-literal=address=https://hooks.slack.com/services/T0197QSA3DK/B03F6S60A1E/webhook
+          
+          kubectl -n sock-shop wait kustomization/sock-shop-tenant 
+          --for=condition=ready --timeout=1m
           
           kubectl -n sock-shop wait deployments/carts 
           --for=condition=Available=True --timeout=1m 
