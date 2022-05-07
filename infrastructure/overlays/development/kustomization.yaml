@@ -8,7 +8,14 @@ patches:
   - path: ./aws-load-balancer-serviceaccount-patch.yaml
   - path: ./dns-patch.yaml
   - path: ./dns-sa-patch.yaml
-  - path: ./slack-patch.yaml
+  - patch: |
+      - op: replace
+        path: /spec/channel
+        value: gitops-flux
+    target:
+      group: notification.toolkit.fluxcd.io
+      version: v1beta1
+      kind: Provider
   - patch: |
       - op: add
         path: /spec/serviceAccountName

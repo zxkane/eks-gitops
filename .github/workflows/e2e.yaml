@@ -44,6 +44,9 @@ jobs:
             name: prestashop-mariadb
             namespace: kube-system
           EOF
+
+          kubectl -n flux-system create secret generic slack-url \
+          --from-literal=address=https://hooks.slack.com/services/T0197QSA3DK/B03F6S60A1E/webhook
           
           kubectl -n kube-system create secret generic slack-url \
           --from-literal=address=https://hooks.slack.com/services/T0197QSA3DK/B03F6S60A1E/webhook
@@ -75,7 +78,7 @@ jobs:
           kubectl -n flux-system wait kustomization/infrastructure
           --for=condition=ready --timeout=3m
           
-          kubectl -n kube-system wait alerts.notification.toolkit.fluxcd.io/flux-alert 
+          kubectl -n flux-system wait alerts.notification.toolkit.fluxcd.io/flux-alert 
           --for=condition=Ready=True --timeout 30s
           
           kubectl -n kube-system wait alerts.notification.toolkit.fluxcd.io/kube-system-alert
