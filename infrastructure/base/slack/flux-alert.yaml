@@ -2,7 +2,7 @@ apiVersion: notification.toolkit.fluxcd.io/v1beta1
 kind: Alert
 metadata:
   name: flux-alert
-  namespace: flux-system
+  namespace: kube-system
 spec:
   providerRef:
     name: slack

@@ -5,6 +5,7 @@ metadata:
 spec:
   releaseName: external-dns
   targetNamespace: kube-system
+  storageNamespace: kube-system
   chart:
     spec:
       chart: external-dns
