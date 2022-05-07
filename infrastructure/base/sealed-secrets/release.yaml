@@ -15,6 +15,7 @@ spec:
   serviceAccountName: helm-controller
   releaseName: sealed-secrets-controller
   targetNamespace: kube-system
+  storageNamespace: kube-system
   install:
     crds: Create
   upgrade:
