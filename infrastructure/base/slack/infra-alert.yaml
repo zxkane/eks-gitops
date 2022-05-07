@@ -14,3 +14,6 @@ spec:
     - kind: HelmRelease
       name: '*'
       namespace: 'kube-system'
+    - kind: GitRepository
+      name: '*'
+      namespace: 'kube-system'
