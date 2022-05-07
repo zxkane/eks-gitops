@@ -1,0 +1,33 @@
+apiVersion: notification.toolkit.fluxcd.io/v1beta1
+kind: Provider
+metadata:
+  name: slack
+spec:
+  type: slack
+  secretRef:
+    name: slack-url
+---
+apiVersion: notification.toolkit.fluxcd.io/v1beta1
+kind: Alert
+metadata:
+  name: alert
+spec:
+  providerRef:
+    name: slack
+  eventSeverity: info
+  eventSources:
+    - kind: Kustomization
+      name: '*'
+      namespace: 'sock-shop'
+    - kind: HelmRelease
+      name: '*'
+      namespace: 'sock-shop'
+    - kind: GitRepository
+      name: '*'
+      namespace: 'sock-shop'
+    - kind: ImageUpdateAutomation
+      name: '*'
+      namespace: 'sock-shop'
+    - kind: ImageRepository
+      name: '*'
+      namespace: 'sock-shop'      
