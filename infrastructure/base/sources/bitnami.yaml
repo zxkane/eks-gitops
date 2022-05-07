@@ -2,15 +2,6 @@ apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
   name: bitnami
-  namespace: flux-system
-spec:
-  interval: 30m
-  url: https://charts.bitnami.com/bitnami
----  
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: HelmRepository
-metadata:
-  name: bitnami-charts
   namespace: kube-system
 spec:
   interval: 30m
@@ -20,7 +11,7 @@ apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
   name: sealed-secrets
-  namespace: flux-system
+  namespace: kube-system
 spec:
   interval: 1h0m0s
   url: https://bitnami-labs.github.io/sealed-secrets

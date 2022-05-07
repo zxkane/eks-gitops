@@ -22,7 +22,7 @@ jobs:
           version: v0.11.1
       - name: Install Flux in Kubernetes Kind
         run: |
-          flux install --export > gotk-components.yaml
+          flux install --components-extra=image-reflector-controller,image-automation-controller --export > gotk-components.yaml
           sed '/gotk-sync\.yaml/d' ./clusters/cluster-dev/flux-system/kustomization.yaml > kustomization.yaml
           kubectl apply -k ./
           
@@ -73,10 +73,10 @@ jobs:
           --for=condition=ready --timeout=3m
       - name: Verify helm reconciliation
         run: >
-          kubectl -n flux-system wait helmrelease/sealed-secrets
+          kubectl -n kube-system wait helmrelease/sealed-secrets
           --for=condition=ready --timeout=3m
 
-          kubectl -n flux-system wait helmrelease/external-dns
+          kubectl -n kube-system wait helmrelease/external-dns
           --for=condition=ready --timeout=3m
           
           kubectl -n kube-system wait helmrelease/prestashop-mariadb
@@ -85,11 +85,11 @@ jobs:
         run: >
           kubectl -n flux-system wait kustomization/apps
           --for=condition=ready --timeout=3m
-          
-          kubectl -n app-a wait policies.kyverno.io/restrict-secrets-by-type
-          --for=jsonpath='{.status.ready}'=true --timeout=1m
       - name: Verify tenant 'app-a' reconciliation
         run: >
+          kubectl -n app-a wait policies.kyverno.io/restrict-secrets-by-type
+          --for=jsonpath='{.status.ready}'=true --timeout=1m
+          
           kubectl -n app-a wait kustomization/app-a-tenant
           --for=condition=ready --timeout=3m
       - name: Verify tenant 'sock-shop' reconciliation
@@ -110,4 +110,6 @@ jobs:
           kubectl -n flux-system logs deploy/kustomize-controller
           kubectl -n flux-system logs deploy/helm-controller
           flux get all --all-namespaces
+          kubectl -n kube-system get all
+          kubectl -n app-a get all
           kubectl -n sock-shop get all

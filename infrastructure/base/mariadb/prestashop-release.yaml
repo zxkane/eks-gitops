@@ -9,7 +9,7 @@ spec:
       chart: mariadb
       sourceRef:
         kind: HelmRepository
-        name: bitnami-charts
+        name: bitnami
         namespace: kube-system
       version: 10.4.0
   interval: 1h0m0s

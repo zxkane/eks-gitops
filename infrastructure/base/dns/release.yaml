@@ -4,7 +4,7 @@ metadata:
   name: external-dns
 spec:
   releaseName: external-dns
-  targetNamespace: flux-system
+  targetNamespace: kube-system
   chart:
     spec:
       chart: external-dns
@@ -12,7 +12,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: bitnami
-        namespace: flux-system
+        namespace: kube-system
   interval: 1h0m0s
   install:
     remediation:
