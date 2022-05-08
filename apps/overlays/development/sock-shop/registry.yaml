@@ -1,0 +1,9 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta1
+kind: ImageRepository
+metadata:
+  name: sock-shop-front-end
+spec:
+  image: ghcr.io/zxkane/weaveworksdemos/front-end
+  interval: 1m0s
+
