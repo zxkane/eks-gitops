@@ -1,0 +1,26 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta1
+kind: ImageUpdateAutomation
+metadata:
+  name: sock-shop-front-end
+spec:
+  git:
+    checkout:
+      ref:
+        branch: gitops
+    commit:
+      author:
+        email: fluxcdbot@users.noreply.github.com
+        name: fluxcdbot
+      messageTemplate: '{{range .Updated.Images}}{{println .}}{{end}}'
+    push:
+      branch: gitops
+  interval: 1m0s
+  sourceRef:
+    kind: GitRepository
+    name: sock-shop-tenant
+    namespace: sock-shop
+  update:
+    path: ./deploy/kubernetes/overlays/development
+    strategy: Setters
+

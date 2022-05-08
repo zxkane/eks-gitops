@@ -72,7 +72,8 @@ jobs:
           --source=flux-system \
           --service-account=kustomize-controller \
           --path=./clusters/cluster-dev
-          sleep 20
+          
+          kubectl -n flux-system wait gitrepositories/flux-system --for=condition=Ready=True --timeout=1m
       - name: Verify cluster reconciliation
         run: >
           kubectl -n flux-system wait kustomization/infrastructure
@@ -94,7 +95,22 @@ jobs:
           kubectl -n kube-system wait helmrelease/sealed-secrets
           --for=condition=ready --timeout=3m
       - name: Verify apps reconciliation
+        env:
+          IDENTITY: ${{ secrets.IDENTITY }}
+          IDENTITY_PUB: ${{ secrets.IDENTITY_PUB }}
         run: >
+          kubectl wait ns sock-shop --for=jsonpath='{.status.phase}'=Active
+          --timeout=1m
+          
+          echo $IDENTITY | base64 -d > id_ecdsa
+          
+          echo $IDENTITY_PUB > id_ecdsa.pub
+          
+          kubectl -n sock-shop create secret generic flux-image-automation
+          --from-file=identity=id_ecdsa
+          --from-file=identity.pub=id_ecdsa.pub
+          --from-literal=known_hosts="github.com ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg="        
+        
           kubectl -n flux-system wait kustomization/apps
           --for=condition=ready --timeout=3m
       - name: Verify tenant 'app-a' reconciliation
@@ -111,6 +127,8 @@ jobs:
 
           kubectl -n sock-shop create secret generic slack-url
           --from-literal=address=https://hooks.slack.com/services/T0197QSA3DK/B03F6S60A1E/webhook
+          
+          flux -n sock-shop reconcile source git sock-shop-tenant
           
           kubectl -n sock-shop wait kustomization/sock-shop-tenant 
           --for=condition=ready --timeout=1m
