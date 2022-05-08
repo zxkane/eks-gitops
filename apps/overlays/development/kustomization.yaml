@@ -1,34 +1,5 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ../../base/
   - app-a/
   - sock-shop/
-patches:
-  - patch: |-
-      - op: replace
-        path: /spec/path
-        value: ./overlays/development
-    target:
-      group: kustomize.toolkit.fluxcd.io
-      version: v1beta2
-      kind: Kustomization
-      name: app-a-tenant
-  - patch: |-
-      - op: replace
-        path: /spec/path
-        value: ./deploy/kubernetes/overlays/development
-    target:
-      group: kustomize.toolkit.fluxcd.io
-      version: v1beta2
-      kind: Kustomization
-      name: sock-shop-tenant
-  - patch: |
-      - op: replace
-        path: /spec/channel
-        value: gitops-flux
-    target:
-      group: notification.toolkit.fluxcd.io
-      version: v1beta1
-      kind: Provider
-      name: slack      
