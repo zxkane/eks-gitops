@@ -17,3 +17,5 @@ spec:
     - kind: HelmRelease
       name: '*'
       namespace: 'flux-system'
+  exclusionList:
+    - "^Dependencies.*"      
