@@ -9,3 +9,4 @@ resources:
   - ./secrets.yaml
   - policy
   - rbac.yaml
+  - crossplane
