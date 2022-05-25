@@ -1,0 +1,29 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: crossplane
+  namespace: crossplane-system
+spec:
+  releaseName: crossplane
+  targetNamespace: crossplane-system
+  chart:
+    spec:
+      chart: crossplane
+      version: "1.8.0"
+      sourceRef:
+        kind: HelmRepository
+        name: crossplane-stable
+        namespace: crossplane-system
+  timeout: 5m
+  test:
+    enable: true
+    ignoreFailures: true        
+  interval: 1h0m0s
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      remediateLastFailure: false    
