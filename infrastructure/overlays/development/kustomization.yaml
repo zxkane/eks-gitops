@@ -29,4 +29,12 @@ patches:
         value: helm-controller
     target:
       kind: HelmRelease
-      namespace: (flux-system|kube-system|mariadb|crossplane-system)  
+      namespace: (flux-system|kube-system|mariadb|crossplane-system)
+  - patch: |
+      - op: replace
+        path: /metadata/annotations/eks.amazonaws.com~1role-arn
+        value: arn:aws:iam::845861764576:role/crossplane-provider-aws
+    target:
+      group: pkg.crossplane.io
+      version: v1alpha1
+      kind: ControllerConfig
