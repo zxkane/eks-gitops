@@ -3,6 +3,8 @@ kind: Kustomization
 resources:
   - ../../base
   - ./secrets.yaml
+  - ./crossplane-provider.yaml
+  - ./crossplane-provider-config.yaml    
 patches:
   - path: ./aws-load-balancer-controller-patch.yaml
   - path: ./aws-load-balancer-serviceaccount-patch.yaml
@@ -30,11 +32,3 @@ patches:
     target:
       kind: HelmRelease
       namespace: (flux-system|kube-system|mariadb|crossplane-system)
-  - patch: |
-      - op: replace
-        path: /metadata/annotations/eks.amazonaws.com~1role-arn
-        value: arn:aws:iam::845861764576:role/crossplane-provider-aws
-    target:
-      group: pkg.crossplane.io
-      version: v1alpha1
-      kind: ControllerConfig
