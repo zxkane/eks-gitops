@@ -1,0 +1,16 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: crossplane-provider-config
+  namespace: crossplane-system
+spec:
+  interval: 10m0s
+  path: ./infrastructure/base/crossplan/provider-config
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  dependsOn:
+    - name: crossplane-provider
+  timeout: 5m
