@@ -101,7 +101,9 @@ jobs:
         run: >
           kubectl wait --for condition=established --timeout=300s crd/providers.pkg.crossplane.io
           
-          # kubectl wait --for condition=established --timeout=300s crd/providerconfigs.aws.crossplane.io
+          sleep 60s
+          
+          kubectl wait --for condition=established --timeout=300s crd/providerconfigs.aws.crossplane.io
       - name: Verify apps reconciliation
         env:
           IDENTITY: ${{ secrets.IDENTITY }}
