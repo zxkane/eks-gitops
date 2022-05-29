@@ -14,6 +14,7 @@ spec:
         kind: HelmRepository
         name: crossplane-stable
         namespace: crossplane-system
+  serviceAccountName: helm-controller
   timeout: 5m
   test:
     enable: true
