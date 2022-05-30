@@ -29,4 +29,3 @@ spec:
         group: pkg.crossplane.io
         version: v1alpha1
         kind: ControllerConfig
-        namespace: crossplane-system
