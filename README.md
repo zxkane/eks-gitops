@@ -11,7 +11,11 @@
 - [租户的自服务持续部署](https://kane.mx/posts/gitops/flux-in-action-2/#%E5%9B%9B%E7%A7%9F%E6%88%B7%E9%9A%94%E7%A6%BB%E4%B8%94%E8%87%AA%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%BA%94%E7%94%A8%E6%8C%81%E7%BB%AD%E9%83%A8%E7%BD%B2)
 - [镜像更新自动部署](https://kane.mx/posts/gitops/flux-in-action-2/#%E4%BA%94%E8%87%AA%E5%8A%A8%E5%8F%91%E5%B8%83%E9%95%9C%E5%83%8F%E6%9B%B4%E6%96%B0)
  
-示例应用：
+## 示例应用：
 
 - [Sock Shop : A Microservice Demo Application](https://github.com/microservices-demo/microservices-demo)
 - [Prestashop](https://github.com/bitnami/charts/tree/master/bitnami/prestashop)
+
+## 其他
+
+[Crossplane on GitOps](https://kane.mx/posts/gitops/crossplane-meets-gitops/)
