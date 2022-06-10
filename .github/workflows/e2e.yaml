@@ -95,6 +95,9 @@ jobs:
           kubectl -n kube-system wait helmrelease/sealed-secrets
           --for=condition=ready --timeout=3m
           
+          kubectl -n kube-system wait helmrelease/external-secrets
+          --for=condition=ready --timeout=3m
+          
           kubectl -n crossplane-system wait helmrelease/crossplane --for=condition=ready
           --timeout=3m
       - name: Verify crossplane's reconciliation
