@@ -74,9 +74,6 @@ jobs:
           --for=condition=ready --timeout=3m
       - name: Verify infra's reconciliation
         run: >
-          kubectl -n kube-system wait helmrelease/prestashop-mariadb
-          --for=condition=ready --timeout=3m
-
           kubectl -n kube-system wait helmrelease/external-dns
           --for=condition=ready --timeout=3m
           
@@ -86,12 +83,15 @@ jobs:
           kubectl -n kube-system wait helmrelease/external-secrets
           --for=condition=ready --timeout=3m
           
+          kubectl -n flux-system wait ks/secrets --for=condition=ready --timeout=5m
+          
+          kubectl -n kube-system wait helmrelease/prestashop-mariadb
+          --for=condition=ready --timeout=3m
+
           kubectl -n crossplane-system wait helmrelease/crossplane --for=condition=ready
           --timeout=3m
       - name: Verify overlays's reconciliation
         run: |
-          kubectl -n flux-system wait ks/secrets --for=condition=ready --timeout=5m
-
           cat <<EOF | kubectl apply -f -
           apiVersion: external-secrets.io/v1beta1
           kind: ClusterSecretStore
