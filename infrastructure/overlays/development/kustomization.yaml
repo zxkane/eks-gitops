@@ -32,3 +32,19 @@ patches:
     target:
       kind: HelmRelease
       namespace: (flux-system|kube-system|mariadb|crossplane-system)
+  - patch: |
+     - op: add
+       path: /spec/patches/-
+       value:
+        patch: |
+          - op: add
+            path: /spec/values/serviceAccount/annotations/eks.amazonaws.com~1role-arn
+            value: arn:aws:iam::845861764576:role/gitops-cluster-dev-external-secrets-role
+        target:
+          kind: HelmRelease
+          name: external-secrets
+    target:
+      group: kustomize.toolkit.fluxcd.io
+      version: v1beta2
+      kind: Kustomization
+      name: external-secrets
