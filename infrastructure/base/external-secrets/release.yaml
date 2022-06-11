@@ -20,6 +20,9 @@ spec:
         namespace: kube-system
   values:
     installCRDs: true
+    serviceAccount:
+      annotations:
+        eks.amazonaws.com/sts-regional-endpoints: 'true'
   serviceAccountName: helm-controller
   timeout: 5m
   test:
