@@ -33,7 +33,7 @@ jobs:
           kubectl -n flux-system wait deployment/source-controller --for=condition=Available=True --timeout=6m
           
           # generate secret for mariadb
-          kubectl apply -f - <<EOF > cat
+          cat <<EOF | kubectl apply -f -
           apiVersion: v1
           data:
             mariadb-password: YzNyRnFTNlhtOW5COUJmQmhSZjRjUHlaejR0SFdRS1pIRFZrVFhNY0hUN1Y2NjJaWUdMdUZaWTdDd3puWnlOQQ==
@@ -44,15 +44,9 @@ jobs:
             name: prestashop-mariadb
             namespace: kube-system
           EOF
-
-          kubectl -n flux-system create secret generic slack-url \
-          --from-literal=address=https://hooks.slack.com/services/T0197QSA3DK/B03F6S60A1E/webhook
-          
-          kubectl -n kube-system create secret generic slack-url \
-          --from-literal=address=https://hooks.slack.com/services/T0197QSA3DK/B03F6S60A1E/webhook
       - name: Setup cluster reconciliation
         run: |
-          kubectl apply -f - <<EOF > cat
+          cat <<EOF | kubectl apply -f -
           apiVersion: source.toolkit.fluxcd.io/v1beta2
           kind: GitRepository
           metadata:
@@ -78,12 +72,6 @@ jobs:
         run: >
           kubectl -n flux-system wait kustomization/infrastructure
           --for=condition=ready --timeout=3m
-          
-          kubectl -n flux-system wait alerts.notification.toolkit.fluxcd.io/flux-alert 
-          --for=condition=Ready=True --timeout 30s
-          
-          kubectl -n kube-system wait alerts.notification.toolkit.fluxcd.io/kube-system-alert
-          --for=condition=Ready=True --timeout 30s
       - name: Verify infra's reconciliation
         run: >
           kubectl -n kube-system wait helmrelease/prestashop-mariadb
@@ -100,6 +88,78 @@ jobs:
           
           kubectl -n crossplane-system wait helmrelease/crossplane --for=condition=ready
           --timeout=3m
+      - name: Verify overlays's reconciliation
+        run: |
+          kubectl -n flux-system wait ks/secrets --for=condition=ready --timeout=5m
+
+          cat <<EOF | kubectl apply -f -
+          apiVersion: external-secrets.io/v1beta1
+          kind: ClusterSecretStore
+          metadata:
+            name: fake
+          spec:
+            provider:
+              fake:
+                data:
+                - key: "dev/slackurl"
+                  value: "https://hooks.slack.com/services/T0197QSA3DK/B03F6S60A1E/webhook"
+          EOF
+          cat <<EOF | kubectl apply -f -
+          apiVersion: external-secrets.io/v1beta1
+          kind: ExternalSecret
+          metadata:
+            name: slack-url-fake
+            namespace: kube-system
+          spec:
+            refreshInterval: 1h
+            secretStoreRef:
+              name: fake
+              kind: ClusterSecretStore
+            target:
+              name: slack-url
+              creationPolicy: Owner
+              deletionPolicy: Delete
+            data:
+              - secretKey: address
+                remoteRef:
+                  key: dev/slackurl
+          ---
+          apiVersion: external-secrets.io/v1beta1
+          kind: ExternalSecret
+          metadata:
+            name: slack-url-fake
+            namespace: flux-system
+          spec:
+            refreshInterval: 1m
+            secretStoreRef:
+              name: fake
+              kind: ClusterSecretStore
+            target:
+              name: slack-url
+              creationPolicy: Owner
+              deletionPolicy: Delete
+            data:
+              - secretKey: address
+                remoteRef:
+                  key: dev/slackurl                  
+          EOF
+          # wait for ExternalSecret is ready
+          kubectl -n flux-system wait ExternalSecrets/slack-url-fake \
+          --for=condition=Ready=True --timeout 60s
+          kubectl -n kube-system wait ExternalSecrets/slack-url-fake \
+          --for=condition=Ready=True --timeout 60s
+          
+          # reconcile flux alert-providers and alerts again
+          # FIXME: workaround for flux's cache issue
+          flux reconcile alert-provider slack -n flux-system || flux reconcile alert-provider slack -n flux-system
+          flux reconcile alert-provider slack -n kube-system || flux reconcile alert-provider slack -n kube-system
+          flux reconcile alert flux-alert -n flux-system || flux reconcile alert flux-alert -n flux-system
+          flux reconcile alert kube-system-alert -n kube-system || flux reconcile alert kube-system-alert -n kube-system
+          
+          kubectl -n flux-system wait alerts.notification.toolkit.fluxcd.io/flux-alert \
+          --for=condition=Ready=True --timeout 30s
+          kubectl -n kube-system wait alerts.notification.toolkit.fluxcd.io/kube-system-alert \
+          --for=condition=Ready=True --timeout 30s          
       - name: Verify crossplane's reconciliation
         run: >
           kubectl wait --for condition=established --timeout=300s crd/providers.pkg.crossplane.io
