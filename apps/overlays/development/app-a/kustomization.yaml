@@ -4,8 +4,8 @@ metadata:
   namespace: app-a
 resources:
   - ../../../base/app-a
-  - ./sealed-prestashop-secrets.yaml
-  - ./sealed-prestashop-db-secrets.yaml
+  - ./prestashop-secrets.yaml
+  - ./prestashop-db-secrets.yaml
 patches:
   - patch: |-
       - op: replace

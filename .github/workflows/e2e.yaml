@@ -24,6 +24,25 @@ jobs:
         run: |
           flux install --components-extra=image-reflector-controller,image-automation-controller --export > gotk-components.yaml
           sed '/gotk-sync\.yaml/d' ./clusters/cluster-dev/flux-system/kustomization.yaml > kustomization.yaml
+          cat <<EOF >> kustomization.yaml
+          
+            - patch: |
+                - op: add
+                  path: /spec/template/spec/containers/0/args/-
+                  value: --concurrent=20
+                - op: add
+                  path: /spec/template/spec/containers/0/args/-
+                  value: --kube-api-qps=500
+                - op: add
+                  path: /spec/template/spec/containers/0/args/-
+                  value: --kube-api-burst=1000
+                - op: add
+                  path: /spec/template/spec/containers/0/args/-
+                  value: --requeue-dependency=5s      
+              target:
+                kind: Deployment
+                name: "(kustomize-controller|helm-controller|source-controller)"                
+          EOF
           kubectl apply -k ./
           
           # check the availability of flux
@@ -31,19 +50,6 @@ jobs:
           kubectl -n flux-system wait deployment/kustomize-controller --for=condition=Available=True --timeout=6m
           kubectl -n flux-system wait deployment/notification-controller --for=condition=Available=True --timeout=6m
           kubectl -n flux-system wait deployment/source-controller --for=condition=Available=True --timeout=6m
-          
-          # generate secret for mariadb
-          cat <<EOF | kubectl apply -f -
-          apiVersion: v1
-          data:
-            mariadb-password: YzNyRnFTNlhtOW5COUJmQmhSZjRjUHlaejR0SFdRS1pIRFZrVFhNY0hUN1Y2NjJaWUdMdUZaWTdDd3puWnlOQQ==
-            mariadb-replication-password: eldrak1iTThoS0xaUkNKdkJjV2pGNVdLZ0J1SlBhV3Azd2M1Qzd0WXNGN1BrdkJHdExWclpOVnp0Wk5DREd0Vw==
-            mariadb-root-password: cVlSdkZZeldLY2hhUWVmd0xxU2RyS2Y3R1dqaHlOdkVMS0tZckFId1VXOUhZczZkQ2h4bmgyY0J1NGNGejhWdg==
-          kind: Secret
-          metadata:
-            name: prestashop-mariadb
-            namespace: kube-system
-          EOF
       - name: Setup cluster reconciliation
         run: |
           cat <<EOF | kubectl apply -f -
@@ -84,25 +90,27 @@ jobs:
           --for=condition=ready --timeout=3m
           
           kubectl -n flux-system wait ks/secrets --for=condition=ready --timeout=5m
-          
-          kubectl -n kube-system wait helmrelease/prestashop-mariadb
-          --for=condition=ready --timeout=3m
-
-          kubectl -n crossplane-system wait helmrelease/crossplane --for=condition=ready
-          --timeout=3m
       - name: Verify overlays's reconciliation
         run: |
           cat <<EOF | kubectl apply -f -
           apiVersion: external-secrets.io/v1beta1
           kind: ClusterSecretStore
           metadata:
-            name: fake
+            name: e2e
           spec:
             provider:
               fake:
                 data:
                 - key: "dev/slackurl"
                   value: "https://hooks.slack.com/services/T0197QSA3DK/B03F6S60A1E/webhook"
+                - key: "dev/prestashop/mariadb/password"
+                  value: "s7a0N5HLPlKzHWti"
+                - key: "dev/prestashop/mariadb/replication-password"
+                  value: "srakrAVJwHxmW6rb"
+                - key: "dev/prestashop/mariadb/root-password"
+                  value: "3EwB1MNikIYTu9ZV"
+                - key: "dev/prestashop/password"
+                  value: "wzno9fa9jPKHNEP1" 
           EOF
           cat <<EOF | kubectl apply -f -
           apiVersion: external-secrets.io/v1beta1
@@ -113,7 +121,7 @@ jobs:
           spec:
             refreshInterval: 1h
             secretStoreRef:
-              name: fake
+              name: e2e
               kind: ClusterSecretStore
             target:
               name: slack-url
@@ -132,7 +140,7 @@ jobs:
           spec:
             refreshInterval: 1m
             secretStoreRef:
-              name: fake
+              name: e2e
               kind: ClusterSecretStore
             target:
               name: slack-url
@@ -159,9 +167,85 @@ jobs:
           kubectl -n flux-system wait alerts.notification.toolkit.fluxcd.io/flux-alert \
           --for=condition=Ready=True --timeout 30s
           kubectl -n kube-system wait alerts.notification.toolkit.fluxcd.io/kube-system-alert \
-          --for=condition=Ready=True --timeout 30s          
+          --for=condition=Ready=True --timeout 30s
+          
+          # set secret for mariadb
+          cat <<EOF | kubectl apply -f -
+          apiVersion: external-secrets.io/v1beta1
+          kind: ExternalSecret
+          metadata:
+            name: prestashop-mariadb-e2e
+            namespace: kube-system
+          spec:
+            refreshInterval: 1h
+            secretStoreRef:
+              name: e2e
+              kind: ClusterSecretStore
+            target:
+              name: prestashop-mariadb
+              creationPolicy: Owner
+              deletionPolicy: Delete
+            data:
+              - secretKey: mariadb-password
+                remoteRef:
+                  key: dev/prestashop/mariadb/password
+              - secretKey: mariadb-replication-password
+                remoteRef:
+                  key: dev/prestashop/mariadb/replication-password
+              - secretKey: mariadb-root-password
+                remoteRef:
+                  key: dev/prestashop/mariadb/root-password
+          ---
+          apiVersion: external-secrets.io/v1beta1
+          kind: ExternalSecret
+          metadata:
+            name: prestashop-db-secrets-e2e
+            namespace: app-a
+          spec:
+            refreshInterval: 1h
+            secretStoreRef:
+              name: e2e
+              kind: ClusterSecretStore
+            target:
+              name: prestashop-db-secrets
+              creationPolicy: Owner
+              deletionPolicy: Delete
+            data:
+              - secretKey: db-password
+                remoteRef:
+                  key: dev/prestashop/mariadb/password
+          ---
+          apiVersion: external-secrets.io/v1beta1
+          kind: ExternalSecret
+          metadata:
+            name: prestashop-e2e
+            namespace: app-a
+          spec:
+            refreshInterval: 1h
+            secretStoreRef:
+              name: e2e
+              kind: ClusterSecretStore
+            target:
+              name: prestashop
+              creationPolicy: Owner
+              deletionPolicy: Delete
+            data:
+              - secretKey: prestashop-password
+                remoteRef:
+                  key: dev/prestashop/password                  
+          EOF
+          kubectl -n kube-system wait ExternalSecrets/prestashop-mariadb-e2e \
+          --for=condition=Ready=True --timeout 60s
+          # re-reconcile mariadb release
+          flux suspend hr prestashop-mariadb -n kube-system
+          flux resume hr prestashop-mariadb -n kube-system
+          kubectl -n kube-system wait helmrelease/prestashop-mariadb \
+          --for=condition=ready --timeout=3m
       - name: Verify crossplane's reconciliation
         run: >
+          kubectl -n crossplane-system wait helmrelease/crossplane --for=condition=ready
+          --timeout=3m
+          
           kubectl wait --for condition=established --timeout=300s crd/providers.pkg.crossplane.io
           
           sleep 60s
@@ -188,7 +272,7 @@ jobs:
           --for=condition=ready --timeout=3m
       - name: Verify tenant 'app-a' reconciliation
         run: >
-          kubectl -n app-a wait policies.kyverno.io/restrict-secrets-by-type
+          kubectl wait clusterpolicies.kyverno.io/restrict-secrets-by-type
           --for=jsonpath='{.status.ready}'=true --timeout=1m
           
           kubectl -n app-a wait kustomization/app-a-tenant

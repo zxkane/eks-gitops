@@ -6,3 +6,5 @@ primary:
   persistence:
     enabled: false
     storageClass: standard
+image:
+  debug: true
