@@ -1,8 +1,7 @@
 apiVersion: kyverno.io/v1
-kind: Policy
+kind: ClusterPolicy
 metadata:
   name: restrict-secrets-by-type
-  namespace: app-a
   annotations:
     policies.kyverno.io/title: Restrict Secrets by Name
     policies.kyverno.io/category: security
@@ -16,9 +15,12 @@ spec:
   rules:
     - name: safe-secrets-for-helm-storage
       match:
-        resources:
-          kinds:
+        all:
+        - resources:
+            kinds:
             - Secret
+            namespaces:
+            - "app-a"
       preconditions:
         all:
           - key: '{{request.operation}}'
